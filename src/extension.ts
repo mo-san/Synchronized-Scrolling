@@ -15,6 +15,7 @@ const msecScrollEnd: number = 300;
  * If another instance of scrolling comes in before this time limit, it will be discarded.
  */
 let waitUntil: number = Date.now();
+const backOffFactor: number = 600;
 
 /**
  * Whether this extension is enabled. If false, this does not synchronize scrolling.
@@ -43,7 +44,7 @@ const visibleRangeChanged = () => window.onDidChangeTextEditorVisibleRanges(Text
     if (waitUntil > Date.now()) { return };
 
     const editorScrolled = TextEditorVisibleRangesChangeEvent.textEditor;
-    waitUntil = Date.now() + 600;
+    waitUntil = Date.now() + backOffFactor;
     setTimeout(() => {
         window.visibleTextEditors
             .filter(editor => editor.id !== editorScrolled.id)

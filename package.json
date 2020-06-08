@@ -2,7 +2,13 @@
     "name": "synchronized-scrolling",
     "displayName": "Synchronized Scrolling",
     "description": "",
-    "version": "0.0.1",
+    "version": "0.1.0",
+    "publisher": "masaki.t",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
     "engines": {
         "vscode": "^1.45.0"
     },
