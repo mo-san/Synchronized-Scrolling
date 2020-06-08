@@ -1,42 +1,27 @@
 // To ignore alerts saying "no property 'id' in TextEditor", which there really is on runtime,
 // append `id: string` under the interface `TextEditor` in `node_modules\@types\vscode\index.d.ts`.
 
-import { window, commands, ExtensionContext, TextEditor, TextEditorRevealType, Range, workspace, Position, TextDocument } from 'vscode';
+import { window, commands, ExtensionContext, TextEditor, TextEditorRevealType, Range, workspace, Position } from 'vscode';
 
-const showDebugMessage = (...msg: any) => window.showInformationMessage(JSON.stringify(msg));
+// const showDebugMessage = (...msg: any) => window.showInformationMessage(JSON.stringify(msg));
 
 /**
  * How long this extension should wait for scrolling to become still in milliseconds.
  * I couldn't find out another nice solution to detect the end of moving.
  */
-const msecScrollEnd: number = 300;
+const msecScrollEnd: number = 200;
 
 /**
  * If another instance of scrolling comes in before this time limit, it will be discarded.
  */
 let waitUntil: number = Date.now();
-const backOffFactor: number = 600;
+const backOffFactor: number = 500;
 
 /**
  * Whether this extension is enabled. If false, this does not synchronize scrolling.
  */
 let isExtensionEnabled: boolean = workspace.getConfiguration("synchronizedScrolling").get<boolean>("automaticallyEnabled", true);
 
-/**
- * This extension will try to align the top lines in all editors ...
- * by line number if `true`, by ratio to whole document if `false`.
- */
-let revealByLineNumber: boolean = false;
-
-/**
- * `InCenter`: The range will always be revealed in the center of the viewport.
- * `AtTop`: The range will always be revealed at the top of the viewport.
- */
-let revealType: TextEditorRevealType.AtTop | TextEditorRevealType.InCenter = TextEditorRevealType.AtTop;
-
-/**
- * Event listener
- */
 const visibleRangeChanged = () => window.onDidChangeTextEditorVisibleRanges(TextEditorVisibleRangesChangeEvent => {
     if (!isExtensionEnabled) { return }
     if (window.visibleTextEditors.length < 2) { return }
@@ -48,7 +33,7 @@ const visibleRangeChanged = () => window.onDidChangeTextEditorVisibleRanges(Text
     setTimeout(() => {
         window.visibleTextEditors
             .filter(editor => editor.id !== editorScrolled.id)
-            .map(editor => editor.revealRange(getRangeToReveal(editorScrolled, editor), revealType));
+            .map(editor => editor.revealRange(getRangeToReveal(editorScrolled, editor), TextEditorRevealType.AtTop));
     } , msecScrollEnd);
 });
 
@@ -58,27 +43,16 @@ const visibleRangeChanged = () => window.onDidChangeTextEditorVisibleRanges(Text
  * @param editorOther TextEditors other than the source.
  */
 function getRangeToReveal(editorSource: TextEditor, editorOther: TextEditor): Range {
-    if (revealByLineNumber) {
-        if (revealType === TextEditorRevealType.AtTop) {
-            return editorSource.visibleRanges[0];
-        } else {
-            return editorSource.visibleRanges[0];
-        }
-    } else {
-        function _makeRange(source: TextDocument, other: TextDocument): Range {
-            const visibleRange = editorSource.visibleRanges[0];
-            let target: number;
-            if (revealType === TextEditorRevealType.AtTop) {
-                target = source.offsetAt(editorSource.visibleRanges[0].start);
-            } else {
-                target = Math.round((source.offsetAt(visibleRange.start) + source.offsetAt(visibleRange.end)) / 2);
-            }
-            const ratio = target / source.offsetAt(new Position(source.lineCount + 1, 0));
-            const posTop = other.positionAt(ratio * other.offsetAt(new Position(other.lineCount + 1, 0)));
-            return new Range(posTop, posTop);
-        }
-        return _makeRange(editorSource.document, editorOther.document);
+    const source = editorSource.document;
+    const other = editorOther.document;
+    const visibleRange = editorSource.visibleRanges[0];
+    // on topmost
+    if (visibleRange.start.line === 0 && visibleRange.start.character === 0) {
+        return new Range(0, 0, 0, 0);
     }
+    const ratio = source.offsetAt(visibleRange.start) / source.offsetAt(new Position(source.lineCount + 1, 0));
+    const pos = other.positionAt(ratio * other.offsetAt(new Position(other.lineCount + 1, 0)));
+    return new Range(pos, pos);
 }
 
 function toggleSynchronizedScrolling(): void {

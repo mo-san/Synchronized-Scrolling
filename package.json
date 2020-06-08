@@ -7,7 +7,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "https://github.com/mo-san/Synchronized-Scrolling.git"
     },
     "engines": {
         "vscode": "^1.45.0"
