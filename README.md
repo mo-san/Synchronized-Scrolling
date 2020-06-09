@@ -5,7 +5,7 @@
 
 You can scroll two (and more, of course) editor panels synchronously no matter how splitting including vertically or horizontally split:
 
-![readme_img](https://user-images.githubusercontent.com/8792364/84131369-6c22a600-aa7f-11ea-80f2-0448d30f70b7.gif)
+![readme_image](https://user-images.githubusercontent.com/8792364/84137362-8eb8bd00-aa87-11ea-9556-a86f0990ef1f.gif)
 
 ## Installation
 
