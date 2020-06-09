@@ -18,6 +18,12 @@ let waitUntil: number = Date.now();
 const backOffFactor: number = 500;
 
 /**
+ * This extension will try to align the top lines in all editors ...
+ * by line number if `true`, by ratio to whole document if `false`.
+ */
+const isRevealByLineNumber = (): boolean => workspace.getConfiguration("synchronizedScrolling").get<boolean>("byLine", true);
+
+/**
  * Whether this extension is enabled. If false, this does not synchronize scrolling.
  */
 let isExtensionEnabled: boolean = workspace.getConfiguration("synchronizedScrolling").get<boolean>("automaticallyEnabled", true);
@@ -30,10 +36,11 @@ const visibleRangeChanged = () => window.onDidChangeTextEditorVisibleRanges(Text
 
     const editorScrolled = TextEditorVisibleRangesChangeEvent.textEditor;
     waitUntil = Date.now() + backOffFactor;
+    const isByLine = isRevealByLineNumber();
     setTimeout(() => {
         window.visibleTextEditors
             .filter(editor => editor.id !== editorScrolled.id)
-            .map(editor => editor.revealRange(getRangeToReveal(editorScrolled, editor), TextEditorRevealType.AtTop));
+            .map(editor => editor.revealRange(getRangeToReveal(editorScrolled, editor, isByLine), TextEditorRevealType.AtTop));
     } , msecScrollEnd);
 });
 
@@ -42,13 +49,16 @@ const visibleRangeChanged = () => window.onDidChangeTextEditorVisibleRanges(Text
  * @param editorSource A TextEditor which scroll event was fired upon.
  * @param editorOther TextEditors other than the source.
  */
-function getRangeToReveal(editorSource: TextEditor, editorOther: TextEditor): Range {
+function getRangeToReveal(editorSource: TextEditor, editorOther: TextEditor, isByLine: boolean): Range {
     const source = editorSource.document;
     const other = editorOther.document;
     const visibleRange = editorSource.visibleRanges[0];
     // on topmost
     if (visibleRange.start.line === 0 && visibleRange.start.character === 0) {
         return new Range(0, 0, 0, 0);
+    }
+    if (isByLine) {
+        return visibleRange;
     }
     const ratio = source.offsetAt(visibleRange.start) / source.offsetAt(new Position(source.lineCount + 1, 0));
     const pos = other.positionAt(ratio * other.offsetAt(new Position(other.lineCount + 1, 0)));
