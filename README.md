@@ -41,6 +41,7 @@ MIT Licence
 ## Release Notes
 
 - 0.1.0 / 2020-06-09<br>Initial release
+- 0.2.0 / 2020-06-29<br>Fixed updating also the Output window
 
 ## Credits
 
