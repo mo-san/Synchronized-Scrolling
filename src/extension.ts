@@ -35,11 +35,14 @@ const visibleRangeChanged = () => window.onDidChangeTextEditorVisibleRanges(Text
     if (waitUntil > Date.now()) { return };
 
     const editorScrolled = TextEditorVisibleRangesChangeEvent.textEditor;
+    // exclude "Output window"
+    if (editorScrolled.document.uri.scheme === "output") { return }
     waitUntil = Date.now() + backOffFactor;
     const isByLine = isRevealByLineNumber();
     setTimeout(() => {
         window.visibleTextEditors
             .filter(editor => editor.id !== editorScrolled.id)
+            .filter(editor => editor.document.uri.scheme !== "output")
             .map(editor => editor.revealRange(getRangeToReveal(editorScrolled, editor, isByLine), TextEditorRevealType.AtTop));
     } , msecScrollEnd);
 });
