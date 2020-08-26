@@ -41,7 +41,8 @@ MIT Licence
 ## Release Notes
 
 - 0.1.0 / 2020-06-09<br>Initial release
-- 0.2.0 / 2020-06-29<br>Fixed updating also the Output window
+- 0.2.0 / 2020-06-29<br>Fixed scrolling also the Output window
+- 0.3.0 / 2020-08-26<br>Fixed scrolling when in git comparison
 
 ## Credits
 
