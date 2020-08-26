@@ -33,11 +33,13 @@ const visibleRangeChanged = () => window.onDidChangeTextEditorVisibleRanges(Text
     if (window.visibleTextEditors.length < 2) { return }
     if (!window.activeTextEditor) { return }
     if (waitUntil > Date.now()) { return };
+    // excluding git's comparison
+    if (window.visibleTextEditors.some((editor) => editor.document.uri.scheme === "git")) { return }
+    // excluding vscode's "Output" window
+    if (TextEditorVisibleRangesChangeEvent.textEditor.document.uri.scheme === "output") { return }
 
-    const editorScrolled = TextEditorVisibleRangesChangeEvent.textEditor;
-    // exclude "Output window"
-    if (editorScrolled.document.uri.scheme === "output") { return }
     waitUntil = Date.now() + backOffFactor;
+    const editorScrolled = TextEditorVisibleRangesChangeEvent.textEditor;
     const isByLine = isRevealByLineNumber();
     setTimeout(() => {
         window.visibleTextEditors
